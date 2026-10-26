@@ -11,3 +11,7 @@ build
 out/
 .vscode/
 .DS_Store
+
+# Java/Kotlin compiled output
+*.class
+bin/
