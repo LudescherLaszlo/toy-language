@@ -1,5 +1,11 @@
 package interpreter.model.type;
 
-public class BoolType {
+import interpreter.model.value.BoolValue;
+import interpreter.model.value.IValue;
 
+public class BoolType implements IType {
+    @Override
+    public IValue defaultValue() {
+        return new BoolValue(false);
+    }
 }
