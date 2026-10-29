@@ -1,24 +1,17 @@
 package interpreter.model.exp;
 
+import interpreter.exceptions.MyException;
 import interpreter.model.adt.IDictionary;
 import interpreter.model.value.IValue;
 
-public class ValueExp {
-    private IValue value;
-
-    public ValueExp(IValue value) {
-        this.value = value;
-    }
-
-    public IValue getValue() {
+public record ValueExp(IValue value) implements IExp {
+    @Override
+    public IValue eval(IDictionary<String, IValue> symTable) throws MyException {
         return value;
     }
 
-    public void setValue(IValue value) {
-        this.value = value;
-    }
-
-    public IValue eval(IDictionary<String, IValue> symTable) {
-        return value;
+    @Override
+    public String toString() {
+        return value.toString();
     }
 }
