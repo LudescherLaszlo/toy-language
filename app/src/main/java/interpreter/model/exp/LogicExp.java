@@ -13,7 +13,6 @@ public record LogicExp(LogicOp op, IExp left, IExp right) implements IExp {
             throw new ExpressionException("first operand is not a boolean");
         }
         
-        // Evaluate the second operand and check if it's a boolean
         if (!(right.eval(symTable) instanceof BoolValue(boolean b2))) {
             throw new ExpressionException("second operand is not a boolean");
         }
