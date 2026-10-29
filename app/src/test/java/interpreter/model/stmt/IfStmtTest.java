@@ -30,7 +30,6 @@ class IfStmtTest {
         IStmt stmt = new IfStmt(new ValueExp(new BoolValue(true)), thenS, elseS);
         stmt.execute(state);
         
-        // Statements test: rule S5[cite: 11]
         assertEquals(thenS, state.getExeStack().pop());
     }
 
@@ -39,7 +38,6 @@ class IfStmtTest {
         IStmt stmt = new IfStmt(new ValueExp(new BoolValue(false)), thenS, elseS);
         stmt.execute(state);
         
-        // Statements test: rule S5[cite: 11]
         assertEquals(elseS, state.getExeStack().pop());
     }
 
@@ -47,7 +45,7 @@ class IfStmtTest {
     void nonBooleanConditionThrowsException() {
         IStmt stmt = new IfStmt(new ValueExp(new IntValue(1)), thenS, elseS);
         
-        // Statements test: non-boolean if condition error[cite: 11]
+        // Statements test: non-boolean if condition error
         var ex = assertThrows(StatementException.class, () -> stmt.execute(state));
         assertEquals("Condition of if statement is not a boolean.", ex.getMessage());
     }

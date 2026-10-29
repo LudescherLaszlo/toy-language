@@ -17,12 +17,12 @@ class MyDictionaryTest {
     void putAndLookupWorkCorrectly() throws ADTException {
         dict.put("a", 10);
         assertTrue(dict.isDefined("a"));
-        assertEquals(10, dict.lookup("a")); // ADTs test: dictionary put/lookup/update[cite: 11]
+        assertEquals(10, dict.lookup("a")); // ADTs test: dictionary put/lookup/update
     }
 
     @Test
     void lookupOfMissingKeyThrowsException() {
-        // ADTs test: lookup of a missing key throws[cite: 11]
+        // ADTs test: lookup of a missing key throws
         assertThrows(ADTException.class, () -> dict.lookup("missing"));
     }
 }

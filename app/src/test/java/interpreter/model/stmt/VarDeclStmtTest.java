@@ -25,7 +25,6 @@ class VarDeclStmtTest {
         IStmt stmt = new VarDeclStmt("v", new IntType());
         stmt.execute(state);
         
-        // Statements test: rule S3[cite: 11]
         assertTrue(state.getSymTable().isDefined("v"));
         assertEquals(new IntValue(0), state.getSymTable().lookup("v"));
     }
@@ -35,7 +34,7 @@ class VarDeclStmtTest {
         state.getSymTable().put("v", new IntValue(5));
         IStmt stmt = new VarDeclStmt("v", new IntType());
         
-        // Statements test: redeclared variable error[cite: 11]
+        // Statements test: redeclared variable error
         assertThrows(StatementException.class, () -> stmt.execute(state));
     }   
 }

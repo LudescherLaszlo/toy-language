@@ -18,7 +18,7 @@ class MyStackTest {
         stack.push(1);
         stack.push(2);
         
-        // ADTs test: stack LIFO order[cite: 11]
+        // ADTs test: stack LIFO order
         assertEquals(2, stack.pop());
         assertEquals(1, stack.pop());
         assertTrue(stack.isEmpty());
@@ -26,7 +26,7 @@ class MyStackTest {
 
     @Test
     void popOnEmptyStackThrowsException() {
-        // ADTs test: pop on an empty stack throws[cite: 11]
+        // ADTs test: pop on an empty stack throws
         var ex = assertThrows(ADTException.class, () -> stack.pop());
         assertEquals("pop from an empty stack", ex.getMessage());
     }
