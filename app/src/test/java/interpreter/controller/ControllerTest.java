@@ -18,7 +18,7 @@ import interpreter.view.Examples;
 class ControllerTest {
     private PrgState run(IStmt program) throws MyException {
         PrgState state = new PrgState(new MyStack<>(), new MyDictionary<>(), new MyList<>(), program);
-        new Controller(new Repository(state), false).allStep(); // display off[cite: 12]
+        new Controller(new Repository(state), false).allStep(); // display off
         return state;
     }
 
@@ -27,7 +27,7 @@ class ControllerTest {
         PrgState state = run(Examples.ex1);
         assertTrue(state.getExeStack().isEmpty());
         
-        // Controller test: complete execution gives the expected Out[cite: 11]
+        // Controller test: complete execution gives the expected Out
         assertEquals(new IntValue(2), state.getOut().get(0));
     }
 
@@ -36,8 +36,8 @@ class ControllerTest {
         PrgState state = run(Examples.ex2);
         assertTrue(state.getExeStack().isEmpty());
         
-        // Controller test: complete execution gives the expected Out[cite: 11]
-        assertEquals(new IntValue(18), state.getOut().get(0)); //[cite: 12]
+        // Controller test: complete execution gives the expected Out
+        assertEquals(new IntValue(18), state.getOut().get(0)); 
     }
 
     @Test
@@ -45,7 +45,7 @@ class ControllerTest {
         PrgState state = run(Examples.ex3);
         assertTrue(state.getExeStack().isEmpty());
         
-        // Controller test: complete execution gives the expected Out[cite: 11]
+        // Controller test: complete execution gives the expected Out
         assertEquals(new IntValue(2), state.getOut().get(0));
     }
 
@@ -57,7 +57,7 @@ class ControllerTest {
         // Manually empty the stack to trigger the exception
         state.getExeStack().pop();
         
-        // Controller test: oneStep on an empty stack throws[cite: 11]
+        // Controller test: oneStep on an empty stack throws
         assertThrows(StatementException.class, () -> controller.oneStep(state));
     }
 }
