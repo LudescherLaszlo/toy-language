@@ -1,5 +1,7 @@
 package interpreter.model.stmt;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -76,5 +78,101 @@ class FileStmtTest {
         var stmt = new OpenRFileStmt(new ValueExp(new StringValue(file.toString())));
 
         assertThrows(StatementException.class, () -> stmt.execute(state));
+    }
+
+    @Test
+    void readFileStoresLinesAsIntegersAndStoresZeroAtEndOfFile() throws IOException, MyException {
+        Path file = dir.resolve("numbers.txt");
+        Files.writeString(file, "7\n8\n");
+        var fileName = new StringValue(file.toString());
+        new OpenRFileStmt(new ValueExp(fileName)).execute(state);
+        state.getSymTable().put("n", new IntValue(0));
+        var stmt = new ReadFileStmt(new ValueExp(fileName), "n");
+
+        stmt.execute(state);
+        assertEquals(new IntValue(7), state.getSymTable().lookup("n"));
+        stmt.execute(state);
+        assertEquals(new IntValue(8), state.getSymTable().lookup("n"));
+        stmt.execute(state);
+        assertEquals(new IntValue(0), state.getSymTable().lookup("n"));
+    }
+
+    @Test
+    void readFileWithUndeclaredVariableThrowsException() {
+        var stmt = new ReadFileStmt(new ValueExp(new StringValue("input.txt")), "n");
+
+        assertThrows(StatementException.class, () -> stmt.execute(state));
+    }
+
+    @Test
+    void readFileWithNonIntegerVariableThrowsException() {
+        state.getSymTable().put("text", new StringValue(""));
+        var stmt = new ReadFileStmt(new ValueExp(new StringValue("input.txt")), "text");
+
+        assertThrows(StatementException.class, () -> stmt.execute(state));
+    }
+
+    @Test
+    void readFileWithNonStringExpressionThrowsException() {
+        state.getSymTable().put("n", new IntValue(0));
+        var stmt = new ReadFileStmt(new ValueExp(new IntValue(1)), "n");
+
+        assertThrows(StatementException.class, () -> stmt.execute(state));
+    }
+
+    @Test
+    void readFileWithFileNotOpenThrowsException() {
+        state.getSymTable().put("n", new IntValue(0));
+        var stmt = new ReadFileStmt(new ValueExp(new StringValue("input.txt")), "n");
+
+        assertThrows(StatementException.class, () -> stmt.execute(state));
+    }
+
+    @Test
+    void readFileWithNonIntegerLineThrowsException() throws IOException, MyException {
+        Path file = dir.resolve("invalid.txt");
+        Files.writeString(file, "abc\n");
+        var fileName = new StringValue(file.toString());
+        new OpenRFileStmt(new ValueExp(fileName)).execute(state);
+        state.getSymTable().put("n", new IntValue(0));
+        var stmt = new ReadFileStmt(new ValueExp(fileName), "n");
+
+        assertThrows(StatementException.class, () -> stmt.execute(state));
+    }
+
+    @Test
+    void closeRFileClosesReaderAndRemovesFileFromTable() throws IOException, MyException {
+        Path file = dir.resolve("input.txt");
+        Files.writeString(file, "input");
+        var fileName = new StringValue(file.toString());
+        new OpenRFileStmt(new ValueExp(fileName)).execute(state);
+        BufferedReader reader = state.getFileTable().lookup(fileName);
+
+        new CloseRFileStmt(new ValueExp(fileName)).execute(state);
+
+        assertFalse(state.getFileTable().isDefined(fileName));
+        assertThrows(IOException.class, reader::readLine);
+    }
+
+    @Test
+    void closeRFileWithFileNotOpenThrowsException() {
+        var stmt = new CloseRFileStmt(new ValueExp(new StringValue("input.txt")));
+
+        assertThrows(StatementException.class, () -> stmt.execute(state));
+    }
+
+    @Test
+    void closeRFileWithNonStringExpressionThrowsException() {
+        var stmt = new CloseRFileStmt(new ValueExp(new IntValue(1)));
+
+        assertThrows(StatementException.class, () -> stmt.execute(state));
+    }
+
+    @Test
+    void fileStatementsHaveExpectedStringRepresentations() {
+        var exp = new ValueExp(new StringValue("input.txt"));
+
+        assertEquals("readFile(\"input.txt\", n)", new ReadFileStmt(exp, "n").toString());
+        assertEquals("closeRFile(\"input.txt\")", new CloseRFileStmt(exp).toString());
     }
 }
