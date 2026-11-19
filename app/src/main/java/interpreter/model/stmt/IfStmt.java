@@ -30,6 +30,6 @@ public record IfStmt(IExp cond, IStmt thenS, IStmt elseS) implements IStmt {
 
     @Override
     public String toString() {
-        return "if " + cond.toString() + " then " + thenS.toString() + " else " + elseS.toString();
+        return "(if (" + cond + ") then (" + thenS + ") else (" + elseS + "))";
     }
 }

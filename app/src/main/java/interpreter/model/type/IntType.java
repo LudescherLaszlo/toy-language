@@ -8,4 +8,9 @@ public record IntType() implements IType {
     public IValue defaultValue() {
         return new IntValue(0);
     }
+
+    @Override
+    public String toString() {
+        return "int";
+    }
 }

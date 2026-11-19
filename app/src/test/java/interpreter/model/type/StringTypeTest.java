@@ -8,6 +8,13 @@ import interpreter.model.value.StringValue;
 
 class StringTypeTest {
     @Test
+    void typesHaveExpectedStringRepresentations() {
+        assertEquals("int", new IntType().toString());
+        assertEquals("bool", new BoolType().toString());
+        assertEquals("string", new StringType().toString());
+    }
+
+    @Test
     void defaultValueIsAnEmptyStringValue() {
         assertEquals(new StringValue(""), new StringType().defaultValue());
     }
