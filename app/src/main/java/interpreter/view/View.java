@@ -41,7 +41,7 @@ public class View {
             try {
                 PrgState state = PrgState.of(selectedProgram);
                 
-                IRepository repo = new Repository(state);
+                IRepository repo = new Repository(state, "log" + option + ".txt");
                 Controller controller = new Controller(repo, true); 
 
                 System.out.println("\n--- Execution Trace ---");

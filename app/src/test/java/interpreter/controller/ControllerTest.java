@@ -1,7 +1,11 @@
 package interpreter.controller;
 
 import static org.junit.jupiter.api.Assertions.*;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import interpreter.exceptions.ADTException;
 import interpreter.exceptions.MyException;
@@ -13,9 +17,12 @@ import interpreter.repository.Repository;
 import interpreter.view.Examples;
 
 class ControllerTest {
+    @TempDir
+    Path tempDir;
+
     private PrgState run(IStmt program) throws MyException {
         PrgState state = PrgState.of(program);
-        new Controller(new Repository(state), false).allStep(); // display off
+        new Controller(new Repository(state, tempDir.resolve("log.txt").toString()), false).allStep(); // display off
         return state;
     }
 
@@ -47,9 +54,25 @@ class ControllerTest {
     }
 
     @Test
+    void allStepLogsEveryStateInSectionOrder() throws MyException, IOException {
+        PrgState state = run(Examples.ex1);
+        String log = Files.readString(tempDir.resolve("log.txt"));
+        String[] entries = log.split("(?=ExeStack:)");
+
+        assertEquals(6, entries.length);
+        assertEquals(6, log.split("ExeStack:", -1).length - 1);
+        for (String entry : entries) {
+            assertTrue(entry.indexOf("ExeStack:") < entry.indexOf("SymTable:"));
+            assertTrue(entry.indexOf("SymTable:") < entry.indexOf("Out:"));
+            assertTrue(entry.indexOf("Out:") < entry.indexOf("FileTable:"));
+        }
+        assertTrue(state.getExeStack().isEmpty());
+    }
+
+    @Test
     void oneStepOnEmptyStackThrowsException() throws ADTException {
         PrgState state = PrgState.of(Examples.ex1);
-        Controller controller = new Controller(new Repository(state), false);
+        Controller controller = new Controller(new Repository(state, tempDir.resolve("log.txt").toString()), false);
         
         // Manually empty the stack to trigger the exception
         state.getExeStack().pop();
