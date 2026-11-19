@@ -29,9 +29,9 @@ public class View {
             
             IStmt selectedProgram = null;
             switch (option) {
-                case "1" -> selectedProgram = Examples.ex1;
-                case "2" -> selectedProgram = Examples.ex2;
-                case "3" -> selectedProgram = Examples.ex3;
+                case "1" -> selectedProgram = Examples.EX1;
+                case "2" -> selectedProgram = Examples.EX2;
+                case "3" -> selectedProgram = Examples.EX3;
                 default -> {
                     System.out.println("Invalid option. Please try again.");
                     continue;

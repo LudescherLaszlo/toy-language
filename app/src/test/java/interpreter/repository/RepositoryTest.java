@@ -19,7 +19,7 @@ class RepositoryTest {
     @Test
     void loggingAppendsProgramStates() throws Exception {
         Path logFile = tempDir.resolve("log.txt");
-        Repository repository = new Repository(PrgState.of(Examples.ex1), logFile.toString());
+        Repository repository = new Repository(PrgState.of(Examples.EX1), logFile.toString());
 
         repository.logPrgStateExec();
         repository.logPrgStateExec();
@@ -30,7 +30,7 @@ class RepositoryTest {
 
     @Test
     void loggingToDirectoryThrowsRepositoryException() {
-        Repository repository = new Repository(PrgState.of(Examples.ex1), tempDir.toString());
+        Repository repository = new Repository(PrgState.of(Examples.EX1), tempDir.toString());
 
         assertThrows(RepositoryException.class, repository::logPrgStateExec);
     }
