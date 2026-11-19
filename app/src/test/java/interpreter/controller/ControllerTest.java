@@ -7,9 +7,6 @@ import interpreter.exceptions.ADTException;
 import interpreter.exceptions.MyException;
 import interpreter.exceptions.StatementException;
 import interpreter.model.PrgState;
-import interpreter.model.adt.MyDictionary;
-import interpreter.model.adt.MyList;
-import interpreter.model.adt.MyStack;
 import interpreter.model.stmt.IStmt;
 import interpreter.model.value.IntValue;
 import interpreter.repository.Repository;
@@ -17,7 +14,7 @@ import interpreter.view.Examples;
 
 class ControllerTest {
     private PrgState run(IStmt program) throws MyException {
-        PrgState state = new PrgState(new MyStack<>(), new MyDictionary<>(), new MyList<>(), program);
+        PrgState state = PrgState.of(program);
         new Controller(new Repository(state), false).allStep(); // display off
         return state;
     }
@@ -51,7 +48,7 @@ class ControllerTest {
 
     @Test
     void oneStepOnEmptyStackThrowsException() throws ADTException {
-        PrgState state = new PrgState(new MyStack<>(), new MyDictionary<>(), new MyList<>(), Examples.ex1);
+        PrgState state = PrgState.of(Examples.ex1);
         Controller controller = new Controller(new Repository(state), false);
         
         // Manually empty the stack to trigger the exception
