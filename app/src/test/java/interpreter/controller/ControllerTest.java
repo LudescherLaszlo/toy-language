@@ -14,9 +14,20 @@ import interpreter.exceptions.ADTException;
 import interpreter.exceptions.MyException;
 import interpreter.exceptions.StatementException;
 import interpreter.model.PrgState;
+import interpreter.model.exp.ArithExp;
+import interpreter.model.exp.ArithOp;
+import interpreter.model.exp.RelOp;
+import interpreter.model.exp.RelationalExp;
 import interpreter.model.exp.ValueExp;
+import interpreter.model.exp.VarExp;
+import interpreter.model.stmt.AssignStmt;
+import interpreter.model.stmt.CompStmt;
 import interpreter.model.stmt.IStmt;
 import interpreter.model.stmt.OpenRFileStmt;
+import interpreter.model.stmt.PrintStmt;
+import interpreter.model.stmt.VarDeclStmt;
+import interpreter.model.stmt.WhileStmt;
+import interpreter.model.type.IntType;
 import interpreter.model.value.IntValue;
 import interpreter.model.value.StringValue;
 import interpreter.repository.Repository;
@@ -128,10 +139,43 @@ class ControllerTest {
     }
 
     @Test
+    void whileRunsThroughControllerAndRepository() throws MyException, IOException {
+        PrgState state = run(countdownProgram(3));
+
+        assertTrue(state.getExeStack().isEmpty());
+        assertEquals(List.of(new IntValue(3), new IntValue(2), new IntValue(1)), state.getOut().toList());
+        assertEquals(new IntValue(0), state.getSymTable().lookup("v"));
+        assertFalse(Files.readString(dir.resolve("log.txt")).isEmpty());
+    }
+
+    @Test
+    void whileRunsExactlyOnceWhenInitiallyOne() throws MyException {
+        PrgState state = run(countdownProgram(1));
+
+        assertEquals(List.of(new IntValue(1)), state.getOut().toList());
+        assertEquals(new IntValue(0), state.getSymTable().lookup("v"));
+    }
+
+    @Test
     void openingMissingFileThrowsStatementException() {
         IStmt program = new OpenRFileStmt(
                 new ValueExp(new StringValue(dir.resolve("missing.txt").toString())));
 
         assertThrows(StatementException.class, () -> run(program));
+    }
+
+    private IStmt countdownProgram(int start) {
+        IStmt body = new CompStmt(
+                new PrintStmt(new VarExp("v")),
+                new AssignStmt("v",
+                        new ArithExp(ArithOp.SUB, new VarExp("v"), new ValueExp(new IntValue(1)))));
+        IStmt loop = new WhileStmt(
+                new RelationalExp(RelOp.GT, new VarExp("v"), new ValueExp(new IntValue(0))),
+                body);
+        return new CompStmt(
+                new VarDeclStmt("v", new IntType()),
+                new CompStmt(
+                        new AssignStmt("v", new ValueExp(new IntValue(start))),
+                        loop));
     }
 }
