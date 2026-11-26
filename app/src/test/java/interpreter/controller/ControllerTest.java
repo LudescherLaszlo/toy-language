@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -33,6 +34,7 @@ import interpreter.model.stmt.WhileStmt;
 import interpreter.model.type.IntType;
 import interpreter.model.type.RefType;
 import interpreter.model.value.IntValue;
+import interpreter.model.value.RefValue;
 import interpreter.model.value.StringValue;
 import interpreter.repository.Repository;
 import interpreter.view.Examples;
@@ -88,7 +90,7 @@ class ControllerTest {
     @Test
     void allStepLogsEveryStateInSectionOrder() throws MyException, IOException {
         PrgState state = run(Examples.EX1);
-        String log = Files.readString(dir.resolve("log.txt"));
+        String log = Files.readString(dir.resolve("log.txt")).replace("\r\n", "\n");
         String[] entries = log.split("(?=ExeStack:)");
 
         assertEquals(11, entries.length);
@@ -140,6 +142,79 @@ class ControllerTest {
         PrgState state = run(Examples.EX5);
 
         assertEquals(List.of(new IntValue(5)), state.getOut().toList());
+    }
+
+    @Test
+    void example6AllocatesNestedReferences() throws MyException {
+        PrgState state = run(Examples.EX6);
+
+        assertEquals(List.of(
+                new RefValue(1, new IntType()),
+                new RefValue(2, new RefType(new IntType()))), state.getOut().toList());
+        assertEquals(Map.of(
+                1, new IntValue(20),
+                2, new RefValue(1, new IntType())), state.getHeap().getContent());
+        assertEquals(Map.of(
+                "v", new RefValue(1, new IntType()),
+                "a", new RefValue(2, new RefType(new IntType()))), state.getSymTable().toMap());
+    }
+
+    @Test
+    void example7ReadsNestedReferences() throws MyException {
+        PrgState state = run(Examples.EX7);
+
+        assertEquals(List.of(new IntValue(20), new IntValue(25)), state.getOut().toList());
+        assertEquals(Map.of(
+                1, new IntValue(20),
+                2, new RefValue(1, new IntType())), state.getHeap().getContent());
+        assertEquals(Map.of(
+                "v", new RefValue(1, new IntType()),
+                "a", new RefValue(2, new RefType(new IntType()))), state.getSymTable().toMap());
+    }
+
+    @Test
+    void example8WritesHeapValue() throws MyException {
+        PrgState state = run(Examples.EX8);
+
+        assertEquals(List.of(new IntValue(20), new IntValue(35)), state.getOut().toList());
+        assertEquals(Map.of(1, new IntValue(30)), state.getHeap().getContent());
+        assertEquals(new RefValue(1, new IntType()), state.getSymTable().lookup("v"));
+    }
+
+    @Test
+    void example9KeepsNestedReferenceTargetInLastLoggedState() throws MyException, IOException {
+        PrgState state = run(Examples.EX9);
+
+        assertEquals(List.of(new IntValue(20)), state.getOut().toList());
+        String log = Files.readString(dir.resolve("log.txt")).replace("\r\n", "\n");
+        String[] entries = log.split("(?=ExeStack:)");
+        String lastState = entries[entries.length - 1];
+        assertTrue(lastState.contains("Heap:"));
+        assertTrue(lastState.contains("1 --> 20"));
+    }
+
+    @Test
+    void example10CountsDownThroughWhile() throws MyException {
+        PrgState state = run(Examples.EX10);
+
+        assertEquals(List.of(
+                new IntValue(4), new IntValue(3), new IntValue(2),
+                new IntValue(1), new IntValue(0)), state.getOut().toList());
+    }
+
+    @Test
+    void example11CollectsUnreachableHeapLocation() throws MyException, IOException {
+        PrgState state = run(Examples.EX11);
+
+        assertEquals(List.of(new IntValue(30)), state.getOut().toList());
+        assertEquals(Map.of(2, new IntValue(30)), state.getHeap().getContent());
+
+        String log = Files.readString(dir.resolve("log.txt")).replace("\r\n", "\n");
+        assertTrue(log.contains("1 --> 20\n2 --> 30\n"));
+        String[] entries = log.split("(?=ExeStack:)");
+        String lastState = entries[entries.length - 1];
+        assertTrue(lastState.contains("Heap:\n2 --> 30\n"));
+        assertFalse(lastState.contains("1 --> 20"));
     }
 
     @Test
