@@ -11,11 +11,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import interpreter.exceptions.ADTException;
+import interpreter.exceptions.ExpressionException;
 import interpreter.exceptions.MyException;
 import interpreter.exceptions.StatementException;
 import interpreter.model.PrgState;
 import interpreter.model.exp.ArithExp;
 import interpreter.model.exp.ArithOp;
+import interpreter.model.exp.ReadHeapExp;
 import interpreter.model.exp.RelOp;
 import interpreter.model.exp.RelationalExp;
 import interpreter.model.exp.ValueExp;
@@ -23,11 +25,13 @@ import interpreter.model.exp.VarExp;
 import interpreter.model.stmt.AssignStmt;
 import interpreter.model.stmt.CompStmt;
 import interpreter.model.stmt.IStmt;
+import interpreter.model.stmt.NewStmt;
 import interpreter.model.stmt.OpenRFileStmt;
 import interpreter.model.stmt.PrintStmt;
 import interpreter.model.stmt.VarDeclStmt;
 import interpreter.model.stmt.WhileStmt;
 import interpreter.model.type.IntType;
+import interpreter.model.type.RefType;
 import interpreter.model.value.IntValue;
 import interpreter.model.value.StringValue;
 import interpreter.repository.Repository;
@@ -87,8 +91,8 @@ class ControllerTest {
         String log = Files.readString(dir.resolve("log.txt"));
         String[] entries = log.split("(?=ExeStack:)");
 
-        assertEquals(6, entries.length);
-        assertEquals(6, log.split("ExeStack:", -1).length - 1);
+        assertEquals(11, entries.length);
+        assertEquals(11, log.split("ExeStack:", -1).length - 1);
         for (String entry : entries) {
             assertTrue(entry.indexOf("ExeStack:") < entry.indexOf("SymTable:"));
             assertTrue(entry.indexOf("SymTable:") < entry.indexOf("Out:"));
@@ -157,6 +161,31 @@ class ControllerTest {
     }
 
     @Test
+    void safeGarbageCollectionPreservesNestedReferences() throws MyException {
+        PrgState state = run(nestedReferenceProgram());
+
+        assertEquals(List.of(new IntValue(20)), state.getOut().toList());
+    }
+
+    @Test
+    void unsafeGarbageCollectionDropsNestedReferenceTarget() throws MyException {
+        PrgState state = PrgState.of(nestedReferenceProgram());
+        Controller controller = new Controller(
+                new Repository(state, dir.resolve("unsafe-log.txt").toString()), false);
+
+        for (int step = 0; step < 10; step++) {
+            controller.oneStep(state);
+            state.getHeap().setContent(GarbageCollector.unsafeGarbageCollector(
+                    GarbageCollector.getAddrFromSymTable(state.getSymTable().toMap().values()),
+                    state.getHeap().getContent()));
+        }
+
+        ExpressionException exception = assertThrows(ExpressionException.class,
+                () -> controller.oneStep(state));
+        assertEquals("rH: address 1 is not in the heap", exception.getMessage());
+    }
+
+    @Test
     void openingMissingFileThrowsStatementException() {
         IStmt program = new OpenRFileStmt(
                 new ValueExp(new StringValue(dir.resolve("missing.txt").toString())));
@@ -177,5 +206,20 @@ class ControllerTest {
                 new CompStmt(
                         new AssignStmt("v", new ValueExp(new IntValue(start))),
                         loop));
+    }
+
+    private IStmt nestedReferenceProgram() {
+        return new CompStmt(
+                new VarDeclStmt("v", new RefType(new IntType())),
+                new CompStmt(
+                        new NewStmt("v", new ValueExp(new IntValue(20))),
+                        new CompStmt(
+                                new VarDeclStmt("a", new RefType(new RefType(new IntType()))),
+                                new CompStmt(
+                                        new NewStmt("a", new VarExp("v")),
+                                        new CompStmt(
+                                                new NewStmt("v",
+                                                        new ValueExp(new IntValue(30))),
+                                                new PrintStmt(new ReadHeapExp(new ReadHeapExp(new VarExp("a")))))))));
     }
 }
