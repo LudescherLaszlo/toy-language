@@ -13,7 +13,7 @@ import interpreter.model.value.StringValue;
 public record OpenRFileStmt(IExp exp) implements IStmt {
     @Override
     public PrgState execute(PrgState state) throws MyException {
-        var value = exp.eval(state.getSymTable());
+        var value = exp.eval(state.getSymTable(), state.getHeap());
         if (!(value instanceof StringValue fileName)) {
             throw new StatementException("openRFile: " + exp + " is not a string");
         }

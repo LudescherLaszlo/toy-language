@@ -6,19 +6,21 @@ import org.junit.jupiter.api.Test;
 import interpreter.exceptions.MyException;
 import interpreter.model.adt.IDictionary;
 import interpreter.model.adt.MyDictionary;
+import interpreter.model.adt.MyHeap;
 import interpreter.model.value.BoolValue;
 import interpreter.model.value.IntValue;
 import interpreter.model.value.IValue;
 
 class ValueExpTest {
     private final IDictionary<String, IValue> symTable = new MyDictionary<>();
+    private final MyHeap heap = new MyHeap();
 
     @Test
     void evalReturnsCorrectIntValue() throws MyException {
         IValue expectedValue = new IntValue(42);
         IExp exp = new ValueExp(expectedValue);
         
-        assertEquals(expectedValue, exp.eval(symTable));
+        assertEquals(expectedValue, exp.eval(symTable, heap));
     }
 
     @Test
@@ -26,6 +28,6 @@ class ValueExpTest {
         IValue expectedValue = new BoolValue(true);
         IExp exp = new ValueExp(expectedValue);
         
-        assertEquals(expectedValue, exp.eval(symTable));
+        assertEquals(expectedValue, exp.eval(symTable, heap));
     }
 }

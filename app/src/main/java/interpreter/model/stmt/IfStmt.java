@@ -13,7 +13,7 @@ public record IfStmt(IExp cond, IStmt thenS, IStmt elseS) implements IStmt {
         var symTable = state.getSymTable();
         var exeStack = state.getExeStack();
         
-        IValue condVal = cond.eval(symTable);
+        IValue condVal = cond.eval(symTable, state.getHeap());
         
         if (!(condVal instanceof BoolValue(boolean isTrue))) {
             throw new StatementException("Condition of if statement is not a boolean.");

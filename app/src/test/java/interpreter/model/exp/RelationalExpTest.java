@@ -8,6 +8,7 @@ import interpreter.exceptions.ExpressionException;
 import interpreter.exceptions.MyException;
 import interpreter.model.PrgState;
 import interpreter.model.adt.MyDictionary;
+import interpreter.model.adt.MyHeap;
 import interpreter.model.stmt.IfStmt;
 import interpreter.model.stmt.IStmt;
 import interpreter.model.stmt.NopStmt;
@@ -17,48 +18,49 @@ import interpreter.model.value.IntValue;
 
 class RelationalExpTest {
     private final MyDictionary<String, IValue> symTable = new MyDictionary<>();
+    private final MyHeap heap = new MyHeap();
 
     @Test
     void lessThanEvaluatesTrueAndFalse() throws MyException {
-        assertEquals(new BoolValue(true), exp(RelOp.LT, 1, 2).eval(symTable));
-        assertEquals(new BoolValue(false), exp(RelOp.LT, 2, 1).eval(symTable));
+        assertEquals(new BoolValue(true), exp(RelOp.LT, 1, 2).eval(symTable, heap));
+        assertEquals(new BoolValue(false), exp(RelOp.LT, 2, 1).eval(symTable, heap));
     }
 
     @Test
     void lessThanOrEqualEvaluatesTrueAndFalse() throws MyException {
-        assertEquals(new BoolValue(true), exp(RelOp.LE, 2, 2).eval(symTable));
-        assertEquals(new BoolValue(false), exp(RelOp.LE, 3, 2).eval(symTable));
+        assertEquals(new BoolValue(true), exp(RelOp.LE, 2, 2).eval(symTable, heap));
+        assertEquals(new BoolValue(false), exp(RelOp.LE, 3, 2).eval(symTable, heap));
     }
 
     @Test
     void equalEvaluatesTrueAndFalse() throws MyException {
-        assertEquals(new BoolValue(true), exp(RelOp.EQ, 2, 2).eval(symTable));
-        assertEquals(new BoolValue(false), exp(RelOp.EQ, 2, 3).eval(symTable));
+        assertEquals(new BoolValue(true), exp(RelOp.EQ, 2, 2).eval(symTable, heap));
+        assertEquals(new BoolValue(false), exp(RelOp.EQ, 2, 3).eval(symTable, heap));
     }
 
     @Test
     void notEqualEvaluatesTrueAndFalse() throws MyException {
-        assertEquals(new BoolValue(true), exp(RelOp.NE, 2, 3).eval(symTable));
-        assertEquals(new BoolValue(false), exp(RelOp.NE, 2, 2).eval(symTable));
+        assertEquals(new BoolValue(true), exp(RelOp.NE, 2, 3).eval(symTable, heap));
+        assertEquals(new BoolValue(false), exp(RelOp.NE, 2, 2).eval(symTable, heap));
     }
 
     @Test
     void greaterThanEvaluatesTrueAndFalse() throws MyException {
-        assertEquals(new BoolValue(true), exp(RelOp.GT, 3, 2).eval(symTable));
-        assertEquals(new BoolValue(false), exp(RelOp.GT, 2, 3).eval(symTable));
+        assertEquals(new BoolValue(true), exp(RelOp.GT, 3, 2).eval(symTable, heap));
+        assertEquals(new BoolValue(false), exp(RelOp.GT, 2, 3).eval(symTable, heap));
     }
 
     @Test
     void greaterThanOrEqualEvaluatesTrueAndFalse() throws MyException {
-        assertEquals(new BoolValue(true), exp(RelOp.GE, 2, 2).eval(symTable));
-        assertEquals(new BoolValue(false), exp(RelOp.GE, 1, 2).eval(symTable));
+        assertEquals(new BoolValue(true), exp(RelOp.GE, 2, 2).eval(symTable, heap));
+        assertEquals(new BoolValue(false), exp(RelOp.GE, 1, 2).eval(symTable, heap));
     }
 
     @Test
     void nonIntegerFirstOperandThrowsExpressionException() {
         var expression = new RelationalExp(RelOp.LT, new ValueExp(new BoolValue(true)), new ValueExp(new IntValue(1)));
 
-        var exception = assertThrows(ExpressionException.class, () -> expression.eval(symTable));
+        var exception = assertThrows(ExpressionException.class, () -> expression.eval(symTable, heap));
         assertEquals("first operand is not an integer", exception.getMessage());
     }
 
@@ -66,7 +68,7 @@ class RelationalExpTest {
     void nonIntegerSecondOperandThrowsExpressionException() {
         var expression = new RelationalExp(RelOp.LT, new ValueExp(new IntValue(1)), new ValueExp(new BoolValue(true)));
 
-        var exception = assertThrows(ExpressionException.class, () -> expression.eval(symTable));
+        var exception = assertThrows(ExpressionException.class, () -> expression.eval(symTable, heap));
         assertEquals("second operand is not an integer", exception.getMessage());
     }
 
